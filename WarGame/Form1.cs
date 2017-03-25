@@ -14,6 +14,7 @@ namespace WarGame
     {
         private int Rounds = 1;
         private int MaxRounds;
+        private int Sets;
         private int PlayerPoints = 0;
         private int CPUPoints = 0;
         private string PlayerName;
@@ -58,7 +59,7 @@ namespace WarGame
             MessageBox.Show("Short info about app");
         }
 
-        public void CreateNewGame(string playerName, string cpuName, int roundsCount)
+        public void CreateNewGame(string playerName, string cpuName, int roundsCount, int sets)
         {
             Rounds = 1;
             PlayerPoints = 0;
@@ -134,7 +135,7 @@ namespace WarGame
                 DialogResult dialogResult = MessageBox.Show($"{result}. Wanna play again?", "Finish", MessageBoxButtons.YesNo);
                 if (dialogResult == DialogResult.Yes)
                 {
-                    CreateNewGame(PlayerName, CPUName, MaxRounds);
+                    CreateNewGame(PlayerName, CPUName, MaxRounds, Sets);
                     return;
                 }
                 else if (dialogResult == DialogResult.No)

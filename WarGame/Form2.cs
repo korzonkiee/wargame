@@ -16,6 +16,7 @@ namespace WarGame
         public string PlayerName { get; set; }
         public string CPUName { get; set; }
         public int RoundCount { get; set; }
+        public int Sets { get; set; }
 
         public Form2(Form1 context)
         {
@@ -23,6 +24,10 @@ namespace WarGame
             InitializeComponent();
             this.ShowInTaskbar = false;
             FormClosing += new FormClosingEventHandler(OnClosing);
+            textBox4.Text = "maciek";
+            textBox5.Text = "cpu";
+            textBox6.Text = "5";
+            textBox7.Text = "5";
         }
         private void OnClosing(Object sender, FormClosingEventArgs args)
         {
@@ -34,7 +39,7 @@ namespace WarGame
         {
             if (ValidateDataForm())
             {
-                Context.CreateNewGame(PlayerName, CPUName, RoundCount);
+                Context.CreateNewGame(PlayerName, CPUName, RoundCount, Sets);
                 Context.Visible = true;
                 Dispose();
             }
@@ -49,13 +54,15 @@ namespace WarGame
         {
             if (textBox4.Text.Count() <= 0 ||
                 textBox5.Text.Count() <= 0 ||
-                textBox6.Text.Count() <= 0)
+                textBox6.Text.Count() <= 0 ||
+                textBox7.Text.Count() <= 0)
             {
                 MessageBox.Show("Wypełnij wszystkie pola");
                 return false;
             }
 
-            if (!IsDigitsOnly(textBox6.Text.ToString()))
+            if (!IsDigitsOnly(textBox6.Text.ToString()) ||
+                !IsDigitsOnly(textBox7.Text.ToString()))
             {
                 MessageBox.Show("Wprowadź poprawne dane");
                 return false;
@@ -66,10 +73,12 @@ namespace WarGame
             try
             {
                 RoundCount = Int32.Parse(textBox6.Text.ToString());
+                Sets = Int32.Parse(textBox7.Text.ToString());
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                Sets = 1;
                 RoundCount = 3;
             }
 
