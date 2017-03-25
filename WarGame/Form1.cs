@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,10 @@ namespace WarGame
         private int CPUPoints = 0;
         private string PlayerName;
         private string CPUName;
+        private bool AutoGameplay = false;
+        private int Deck;
+        private int DrawsInRow = 0;
+        private bool War = false;
 
         public Form1()
         {
@@ -33,6 +38,8 @@ namespace WarGame
             this.StartPosition = FormStartPosition.CenterScreen;
             this.MinimumSize = new Size(800, 600);
             FormClosing += new FormClosingEventHandler(OnClosing);
+
+            tableLayoutPanel4.BorderStyle = BorderStyle.FixedSingle;
         }
 
         private void OnClosing(Object sender, FormClosingEventArgs args)
@@ -73,15 +80,18 @@ namespace WarGame
             MaxRounds = roundsCount;
             PlayerName = playerName;
             CPUName = cpuName;
+            Deck = 10 * sets;
+            PlayerPoints = Deck / 2;
+            CPUPoints = Deck / 2;
 
             label9.Text = cpuName;
             label1.Text = playerName;
 
             label2.Text = $"{playerName} points";
-            label3.Text = "0";
+            label3.Text = PlayerPoints.ToString();
 
             label7.Text = $"{cpuName} points";
-            label8.Text = "0";
+            label8.Text = CPUPoints.ToString();
 
             label5.Text = $"Round: {Rounds} of {MaxRounds}";
 
@@ -92,7 +102,7 @@ namespace WarGame
             Form form1 = new Form();
             Button button1 = new Button();
             Button button2 = new Button();
-            
+
             button1.Text = "OK";
             button1.Location = new Point(10, 10);
             button2.Text = "Cancel";
@@ -105,12 +115,12 @@ namespace WarGame
             form1.AcceptButton = button1;
             form1.CancelButton = button2;
             form1.StartPosition = FormStartPosition.CenterScreen;
-            
+
             form1.Controls.Add(button1);
             form1.Controls.Add(button2);
-            
+
             form1.ShowDialog();
-            
+
             if (form1.DialogResult == DialogResult.OK)
             {
                 Application.Exit();
@@ -124,6 +134,7 @@ namespace WarGame
         //player button
         private void button2_Click(object sender, EventArgs e)
         {
+            Console.WriteLine("Draws " + DrawsInRow);
             if (Rounds > MaxRounds)
             {
                 string result = "";
@@ -151,35 +162,59 @@ namespace WarGame
             label5.Text = $"Round: {Rounds} of {MaxRounds}";
 
             Random rnd = new Random();
-            int playerRandomNumber = rnd.Next(1, 10);
-            int cpuRandomNumber = rnd.Next(1, 10);
+            int playerRandomNumber = rnd.Next(1, 4);
+            int cpuRandomNumber = rnd.Next(1, 4);
 
             button4.Text = cpuRandomNumber.ToString();
             button3.Text = playerRandomNumber.ToString();
-
-            if (playerRandomNumber == cpuRandomNumber)
+            
+            PlayerPoints--;
+            CPUPoints--;
+            if (War)
             {
-                Rounds++;
-                button3.BackColor = Color.Orange;
-                button4.BackColor = Color.Orange;
-            }
-            else if (playerRandomNumber > cpuRandomNumber)
-            {
-                Rounds++;
-                PlayerPoints++;
-                button3.BackColor = Color.Green;
-                button4.BackColor = Color.Red;
+                button3.BackgroundImage = Properties.Resources.back;
+                button3.BackgroundImageLayout = ImageLayout.Stretch;
+                button4.BackgroundImage = Properties.Resources.back;
+                button4.BackgroundImageLayout = ImageLayout.Stretch;
+                War = false;
             }
             else
             {
-                Rounds++;
-                CPUPoints++;
-                button3.BackColor = Color.Red;
-                button4.BackColor = Color.Green;
+                if (playerRandomNumber == cpuRandomNumber)
+                {
+                    DrawsInRow++;
+                    War = true;
+                    button3.BackgroundImage = null;
+                    button4.BackgroundImage = null;
+                    button3.BackColor = Color.Orange;
+                    button4.BackColor = Color.Orange;
+                }
+                else if (playerRandomNumber > cpuRandomNumber)
+                {
+                    PlayerPoints += (DrawsInRow + 1) * 2;
+                    War = false;
+                    button3.BackgroundImage = null;
+                    button4.BackgroundImage = null;
+                    button3.BackColor = Color.Green;
+                    button4.BackColor = Color.Red;
+                    DrawsInRow = 0;
+                }
+                else
+                {
+                    CPUPoints += (DrawsInRow + 1) * 2;
+                    War = false;
+                    button3.BackgroundImage = null;
+                    button4.BackgroundImage = null;
+                    button3.BackColor = Color.Red;
+                    button4.BackColor = Color.Green;
+                    DrawsInRow = 0;
+                }
             }
 
             label3.Text = PlayerPoints.ToString();
             label8.Text = CPUPoints.ToString();
+
+            Rounds++;
         }
 
         //cpu button
@@ -197,6 +232,14 @@ namespace WarGame
         private DialogResult showCloseDialog()
         {
             return MessageBox.Show("Close app?", "Closing", MessageBoxButtons.YesNo);
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            AutoGameplay = !AutoGameplay;
+            if (AutoGameplay)
+                (sender as Button).Text = "Stop";
+            else (sender as Button).Text = "Start";
         }
     }
 }
