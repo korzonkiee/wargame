@@ -21,6 +21,7 @@ namespace WarGame
         {
             this.Context = context;
             InitializeComponent();
+            this.ShowInTaskbar = false;
             FormClosing += new FormClosingEventHandler(OnClosing);
         }
         private void OnClosing(Object sender, FormClosingEventArgs args)
