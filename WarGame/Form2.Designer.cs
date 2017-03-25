@@ -92,7 +92,7 @@
             this.button2.Location = new System.Drawing.Point(193, 129);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 6;
+            this.button2.TabIndex = 8;
             this.button2.Text = "OK";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
@@ -100,7 +100,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(13, 100);
+            this.label7.Location = new System.Drawing.Point(13, 97);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(42, 20);
             this.label7.TabIndex = 7;
@@ -108,10 +108,10 @@
             // 
             // textBox7
             // 
-            this.textBox7.Location = new System.Drawing.Point(132, 97);
+            this.textBox7.Location = new System.Drawing.Point(132, 94);
             this.textBox7.Name = "textBox7";
             this.textBox7.Size = new System.Drawing.Size(100, 26);
-            this.textBox7.TabIndex = 8;
+            this.textBox7.TabIndex = 6;
             // 
             // Form2
             // 

@@ -31,6 +31,7 @@ namespace WarGame
 
             this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
+            this.MinimumSize = new Size(800, 600);
             FormClosing += new FormClosingEventHandler(OnClosing);
         }
 
