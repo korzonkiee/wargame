@@ -13,17 +13,7 @@ namespace WarGame
 {
     public partial class Form1 : Form
     {
-        private int Rounds = 1;
-        private int MaxRounds;
-        private int Sets;
-        private int PlayerPoints = 0;
-        private int CPUPoints = 0;
-        private string PlayerName;
-        private string CPUName;
-        private bool AutoGameplay = false;
-        private int Deck;
-        private int DrawsInRow = 0;
-        private bool War = false;
+        private GameState CurrentGameState;
 
         private static Timer timer;
 
@@ -49,7 +39,8 @@ namespace WarGame
 
         private void TimerEventProcessor(Object myObject, EventArgs myEventArgs)
         {
-            if (Rounds > MaxRounds || PlayerPoints <= 0 || CPUPoints <= 0)
+            if (CurrentGameState.CurrentRound > CurrentGameState.MaxRounds ||
+                CurrentGameState.CurrentPlayerPoints <= 0 || CurrentGameState.CurrentCPUPoints <= 0)
                 return;
             button2.PerformClick();
         }
@@ -90,9 +81,22 @@ namespace WarGame
 
         public void CreateNewGame(string playerName, string cpuName, int roundsCount, int sets)
         {
-            Rounds = 1;
-            PlayerPoints = 0;
-            CPUPoints = 0;
+            CurrentGameState = new GameState()
+            {
+                MaxRounds = roundsCount,
+                Sets = sets,
+                CurrentPlayerPoints = (10 * sets) / 2,
+                CurrentCPUPoints = (10 * sets) / 2,
+                PlayerName = playerName,
+                CPUName = cpuName,
+                Deck = 10 * sets,
+                CurrentRound = 1,
+                AutoGameplay = false,
+                DrawsInRow = 0,
+                War = false,
+                RoundsStates = new List<RoundState>()
+            };
+
             button4.Text = "";
             button3.Text = "";
             button4.BackColor = Color.Gray;
@@ -100,28 +104,19 @@ namespace WarGame
             button4.BackgroundImage = null;
             button3.BackgroundImage = null;
 
-            MaxRounds = roundsCount;
-            PlayerName = playerName;
-            CPUName = cpuName;
-            Sets = sets;
-            Deck = 10 * sets;
-            PlayerPoints = Deck / 2;
-            CPUPoints = Deck / 2;
-
-            AutoGameplay = false;
             button5.Text = "Start";
             timer.Stop();
 
-            label9.Text = cpuName;
-            label1.Text = playerName;
+            label9.Text = CurrentGameState.CPUName;
+            label1.Text = CurrentGameState.PlayerName;
 
-            label2.Text = $"{playerName} points";
-            label3.Text = PlayerPoints.ToString();
+            label2.Text = $"{CurrentGameState.PlayerName} points";
+            label3.Text = CurrentGameState.CurrentPlayerPoints.ToString();
 
-            label7.Text = $"{cpuName} points";
-            label8.Text = CPUPoints.ToString();
+            label7.Text = $"{CurrentGameState.CPUName} points";
+            label8.Text = CurrentGameState.CurrentCPUPoints.ToString();
 
-            label5.Text = $"Round: {Rounds} of {MaxRounds}";
+            label5.Text = $"Round: 1 of {CurrentGameState.MaxRounds}";
         }
 
         //player button
@@ -131,79 +126,98 @@ namespace WarGame
             int playerRandomNumber = rnd.Next(1, 11);
             int cpuRandomNumber = rnd.Next(1, 11);
 
-            label5.Text = $"Round: {Rounds} of {MaxRounds}";
+            label5.Text = $"Round: {CurrentGameState.CurrentRound} of {CurrentGameState.MaxRounds}";
 
             drawNumberOnButton(button3, playerRandomNumber);
             drawNumberOnButton(button4, cpuRandomNumber);
             
-            PlayerPoints--;
-            CPUPoints--;
-            if (War)
+            CurrentGameState.CurrentPlayerPoints--;
+            CurrentGameState.CurrentCPUPoints--;
+            if (CurrentGameState.War)
             {
                 button3.BackgroundImage = Properties.Resources.back;
                 button3.BackgroundImageLayout = ImageLayout.Stretch;
                 button4.BackgroundImage = Properties.Resources.back;
                 button4.BackgroundImageLayout = ImageLayout.Stretch;
-                War = false;
+                CurrentGameState.War = false;
             }
             else
             {
                 if (playerRandomNumber == cpuRandomNumber)
                 {
-                    DrawsInRow++;
-                    War = true;
+                    CurrentGameState.DrawsInRow++;
+                    CurrentGameState.War = true;
                     button3.BackColor = Color.Orange;
                     button4.BackColor = Color.Orange;
                 }
                 else if (playerRandomNumber > cpuRandomNumber)
                 {
-                    PlayerPoints += (DrawsInRow + 1) * 2;
-                    War = false;
+                    CurrentGameState.CurrentPlayerPoints += (CurrentGameState.DrawsInRow + 1) * 2;
+                    CurrentGameState.War = false;
                     button3.BackColor = Color.Green;
                     button4.BackColor = Color.Red;
-                    DrawsInRow = 0;
+                    CurrentGameState.DrawsInRow = 0;
                 }
                 else
                 {
-                    CPUPoints += (DrawsInRow + 1) * 2;
-                    War = false;
+                    CurrentGameState.CurrentCPUPoints += (CurrentGameState.DrawsInRow + 1) * 2;
+                    CurrentGameState.War = false;
                     button3.BackColor = Color.Red;
                     button4.BackColor = Color.Green;
-                    DrawsInRow = 0;
+                    CurrentGameState.DrawsInRow = 0;
                 }
             }
 
-            label3.Text = PlayerPoints.ToString();
-            label8.Text = CPUPoints.ToString();
+            label3.Text = CurrentGameState.CurrentPlayerPoints.ToString();
+            label8.Text = CurrentGameState.CurrentCPUPoints.ToString();
 
-            Rounds++;
 
-            if (Rounds > MaxRounds || PlayerPoints <= 0 || CPUPoints <= 0)
+            var roundState = new RoundState()
+            {
+                CPUPoints = CurrentGameState.CurrentCPUPoints,
+                PlayerPoints = CurrentGameState.CurrentPlayerPoints,
+                RoundNumber = CurrentGameState.CurrentRound
+            };
+
+            CurrentGameState.RoundsStates.Add(roundState);
+            CurrentGameState.CurrentRound++;
+
+            if (CurrentGameState.CurrentRound > CurrentGameState.MaxRounds ||
+                CurrentGameState.CurrentPlayerPoints <= 0 ||
+                CurrentGameState.CurrentCPUPoints <= 0)
             {
                 string result = "";
-                if (PlayerPoints > CPUPoints)
+                if (CurrentGameState.CurrentPlayerPoints > CurrentGameState.CurrentCPUPoints)
                     result = "Win!";
-                else if (PlayerPoints < CPUPoints)
+                else if (CurrentGameState.CurrentPlayerPoints < CurrentGameState.CurrentCPUPoints)
                     result = "Defeat!";
                 else result = "Draw!";
 
-                var highscoresLine = $"{PlayerName},{PlayerPoints},{Rounds - 1};";
+                var highscoresLine = $"{CurrentGameState.PlayerName},{CurrentGameState.CurrentPlayerPoints},{CurrentGameState.CurrentRound - 1};";
                 var highscoresFilePath = System.Environment.CurrentDirectory + @"\highscores.hscrs";
                 File.AppendAllText(highscoresFilePath, highscoresLine);
 
-                DialogResult dialogResult = MessageBox.Show($"{result}. Wanna play again?", "Finish", MessageBoxButtons.YesNo);
-                if (dialogResult == DialogResult.Yes)
+                DialogResult dialogResult1 = MessageBox.Show($"{result}! Show postgame stats?", "Game over", MessageBoxButtons.YesNo);
+                if(dialogResult1 == DialogResult.Yes)
                 {
-                    CreateNewGame(PlayerName, CPUName, MaxRounds, Sets);
-                    return;
-                }
-                else if (dialogResult == DialogResult.No)
+                    var chart = new Form4(CurrentGameState.RoundsStates);
+                    chart.Show();
+                } else
                 {
-                    var secondDialogResult = showCloseDialog();
-                    if (secondDialogResult == DialogResult.Yes)
+                    DialogResult dialogResult2 = MessageBox.Show($"{result}. Wanna play again?", "Finish", MessageBoxButtons.YesNo);
+                    if (dialogResult2 == DialogResult.Yes)
                     {
-                        timer.Tick -= TimerEventProcessor;
-                        Application.Exit();
+                        CreateNewGame(CurrentGameState.PlayerName, CurrentGameState.CPUName, CurrentGameState.MaxRounds, CurrentGameState.Sets);
+                        return;
+                    }
+                    else if (dialogResult2 == DialogResult.No)
+                    {
+                        var secondDialogResult = showCloseDialog();
+                        if (secondDialogResult == DialogResult.Yes)
+                        {
+                            timer.Tick -= TimerEventProcessor;
+                            Application.Exit();
+                        }
                     }
                 }
             }
@@ -228,8 +242,8 @@ namespace WarGame
 
         private void button5_Click(object sender, EventArgs e)
         {
-            AutoGameplay = !AutoGameplay;
-            if (AutoGameplay)
+            CurrentGameState.AutoGameplay = !CurrentGameState.AutoGameplay;
+            if (CurrentGameState.AutoGameplay)
             {
                 timer.Start();
                 (sender as Button).Text = "Stop";
@@ -266,5 +280,29 @@ namespace WarGame
         {
             timer.Interval = (trackBar1.Maximum - trackBar1.Value) * 10 + 1;
         }
+    }
+
+    class GameState
+    {
+        public int MaxRounds { get; set; }
+        public int CurrentRound { get; set; }
+        public int CurrentPlayerPoints { get; set; }
+        public int CurrentCPUPoints { get; set; }
+        public int Sets { get; set; }
+        public string PlayerName { get; set; }
+        public string CPUName { get; set; }
+        public int Deck { get; set; }
+        public bool AutoGameplay { get; set; }
+        public int DrawsInRow { get; set; }
+        public bool War { get; set; }
+
+        public List<RoundState> RoundsStates { get; set; }
+    }
+
+    public class RoundState
+    {
+        public int RoundNumber { get; set; }
+        public int PlayerPoints { get; set; }
+        public int CPUPoints { get; set; }
     }
 }
