@@ -145,6 +145,11 @@ namespace WarGame
                 else if (PlayerPoints < CPUPoints)
                     result = "Defeat!";
                 else result = "Draw!";
+                
+                var highscoresLine = $"{PlayerName},{PlayerPoints},{Rounds}";
+                var highscoresFilePath = System.Environment.CurrentDirectory + @"\highscores.hscrs";
+                File.AppendAllText(highscoresFilePath, highscoresLine);
+
 
                 DialogResult dialogResult = MessageBox.Show($"{result}. Wanna play again?", "Finish", MessageBoxButtons.YesNo);
                 if (dialogResult == DialogResult.Yes)
