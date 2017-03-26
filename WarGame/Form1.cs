@@ -146,7 +146,7 @@ namespace WarGame
                     result = "Defeat!";
                 else result = "Draw!";
                 
-                var highscoresLine = $"{PlayerName},{PlayerPoints},{Rounds}";
+                var highscoresLine = $"{PlayerName},{PlayerPoints},{Rounds - 1};";
                 var highscoresFilePath = System.Environment.CurrentDirectory + @"\highscores.hscrs";
                 File.AppendAllText(highscoresFilePath, highscoresLine);
 
@@ -256,6 +256,12 @@ namespace WarGame
 
             button.BackgroundImage = target;
             button.BackgroundImageLayout = ImageLayout.Stretch;
+        }
+
+        private void highscoresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form3 highscores = new Form3();
+            highscores.Show();
         }
     }
 }
