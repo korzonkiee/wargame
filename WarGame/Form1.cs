@@ -76,10 +76,13 @@ namespace WarGame
             button3.Text = "";
             button4.BackColor = Color.Gray;
             button3.BackColor = Color.Gray;
+            button4.BackgroundImage = null;
+            button3.BackgroundImage = null;
 
             MaxRounds = roundsCount;
             PlayerName = playerName;
             CPUName = cpuName;
+            Sets = sets;
             Deck = 10 * sets;
             PlayerPoints = Deck / 2;
             CPUPoints = Deck / 2;
@@ -134,7 +137,7 @@ namespace WarGame
         private void button2_Click(object sender, EventArgs e)
         {
             Console.WriteLine("Draws " + DrawsInRow);
-            if (Rounds > MaxRounds)
+            if (Rounds > MaxRounds || PlayerPoints <= 0 || CPUPoints <= 0)
             {
                 string result = "";
                 if (PlayerPoints > CPUPoints)
