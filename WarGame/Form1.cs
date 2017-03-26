@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -79,22 +80,24 @@ namespace WarGame
             MessageBox.Show("Short info about app");
         }
 
-        public void CreateNewGame(string playerName, string cpuName, int roundsCount, int sets)
+        public void CreateNewGame(string playerName, string cpuName, int roundsCount, int sets,
+            int? playerPoints = null, int? cpuPoints = null, int currentRound = 1, bool autoGameplay = false,
+            int drawsInRow = 0, bool war = false, List<RoundState> roundsStates = null)
         {
             CurrentGameState = new GameState()
             {
                 MaxRounds = roundsCount,
                 Sets = sets,
-                CurrentPlayerPoints = (10 * sets) / 2,
-                CurrentCPUPoints = (10 * sets) / 2,
+                CurrentPlayerPoints = playerPoints ?? (10 * sets) / 2,
+                CurrentCPUPoints = playerPoints ?? (10 * sets) / 2,
                 PlayerName = playerName,
                 CPUName = cpuName,
                 Deck = 10 * sets,
-                CurrentRound = 1,
-                AutoGameplay = false,
-                DrawsInRow = 0,
-                War = false,
-                RoundsStates = new List<RoundState>()
+                CurrentRound = currentRound,
+                AutoGameplay = autoGameplay,
+                DrawsInRow = drawsInRow,
+                War = war,
+                RoundsStates = roundsStates ?? new List<RoundState>()
             };
 
             button4.Text = "";
@@ -116,7 +119,7 @@ namespace WarGame
             label7.Text = $"{CurrentGameState.CPUName} points";
             label8.Text = CurrentGameState.CurrentCPUPoints.ToString();
 
-            label5.Text = $"Round: 1 of {CurrentGameState.MaxRounds}";
+            label5.Text = $"Round: {CurrentGameState.CurrentRound} of {CurrentGameState.MaxRounds}";
         }
 
         //player button
@@ -194,13 +197,13 @@ namespace WarGame
                 else result = "Draw!";
 
                 var highscoresLine = $"{CurrentGameState.PlayerName},{CurrentGameState.CurrentPlayerPoints},{CurrentGameState.CurrentRound - 1};";
-                var highscoresFilePath = System.Environment.CurrentDirectory + @"\highscores.hscrs";
+                var highscoresFilePath = System.Environment.CurrentDirectory + @"\highscores.hs";
                 File.AppendAllText(highscoresFilePath, highscoresLine);
 
                 DialogResult dialogResult1 = MessageBox.Show($"{result}! Show postgame stats?", "Game over", MessageBoxButtons.YesNo);
                 if(dialogResult1 == DialogResult.Yes)
                 {
-                    var chart = new Form4(CurrentGameState.RoundsStates);
+                    var chart = new Form4(this, CurrentGameState);
                     chart.Show();
                 } else
                 {
@@ -283,11 +286,29 @@ namespace WarGame
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            JsonConvert
+            string gameStateJson =
+                JsonConvert.SerializeObject(CurrentGameState);
+
+            File.WriteAllText(System.Environment.CurrentDirectory + @"\gamestate.gs", gameStateJson);
+        }
+
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string gameStateJson = File.ReadAllText(System.Environment.CurrentDirectory + @"\gamestate.gs");
+            GameState loadedGameState = JsonConvert.DeserializeObject<GameState>(gameStateJson);
+            LoadGameFromSave(loadedGameState);
+        }
+
+        private void LoadGameFromSave(GameState gameState)
+        {
+            CreateNewGame(gameState.PlayerName, gameState.CPUName, gameState.MaxRounds,
+                gameState.Sets, gameState.CurrentPlayerPoints, gameState.CurrentCPUPoints,
+                gameState.CurrentRound, gameState.AutoGameplay, gameState.DrawsInRow,
+                gameState.War, gameState.RoundsStates);
         }
     }
 
-    class GameState
+    public class GameState
     {
         public int MaxRounds { get; set; }
         public int CurrentRound { get; set; }

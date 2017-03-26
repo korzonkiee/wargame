@@ -52,7 +52,7 @@ namespace WarGame
 
         private IList<Highscore> GetHighscoresFromFile()
         {
-            var highscoresFilePath = System.Environment.CurrentDirectory + @"\highscores.hscrs";
+            var highscoresFilePath = System.Environment.CurrentDirectory + @"\highscores.hs";
             var highscores = new List<Highscore>();
 
             var content = File.ReadAllText(highscoresFilePath);

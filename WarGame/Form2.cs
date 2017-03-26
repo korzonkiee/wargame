@@ -24,6 +24,7 @@ namespace WarGame
             InitializeComponent();
             this.ShowInTaskbar = false;
             FormClosing += new FormClosingEventHandler(OnClosing);
+            this.StartPosition = FormStartPosition.CenterScreen;
             textBox4.Text = "maciek";
             textBox5.Text = "cpu";
             textBox6.Text = "5";
