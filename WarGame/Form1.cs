@@ -38,8 +38,8 @@ namespace WarGame
             this.StartPosition = FormStartPosition.CenterScreen;
             this.MinimumSize = new Size(800, 600);
             FormClosing += new FormClosingEventHandler(OnClosing);
-
             tableLayoutPanel4.BorderStyle = BorderStyle.FixedSingle;
+
         }
 
         private void OnClosing(Object sender, FormClosingEventArgs args)
@@ -94,7 +94,6 @@ namespace WarGame
             label8.Text = CPUPoints.ToString();
 
             label5.Text = $"Round: {Rounds} of {MaxRounds}";
-
         }
 
         public void CreateExitDialog()
@@ -162,11 +161,11 @@ namespace WarGame
             label5.Text = $"Round: {Rounds} of {MaxRounds}";
 
             Random rnd = new Random();
-            int playerRandomNumber = rnd.Next(1, 4);
-            int cpuRandomNumber = rnd.Next(1, 4);
+            int playerRandomNumber = rnd.Next(1, 11);
+            int cpuRandomNumber = rnd.Next(1, 11);
 
-            button4.Text = cpuRandomNumber.ToString();
-            button3.Text = playerRandomNumber.ToString();
+            drawNumberOnButton(button3, playerRandomNumber);
+            drawNumberOnButton(button4, cpuRandomNumber);
             
             PlayerPoints--;
             CPUPoints--;
@@ -184,8 +183,6 @@ namespace WarGame
                 {
                     DrawsInRow++;
                     War = true;
-                    button3.BackgroundImage = null;
-                    button4.BackgroundImage = null;
                     button3.BackColor = Color.Orange;
                     button4.BackColor = Color.Orange;
                 }
@@ -193,8 +190,6 @@ namespace WarGame
                 {
                     PlayerPoints += (DrawsInRow + 1) * 2;
                     War = false;
-                    button3.BackgroundImage = null;
-                    button4.BackgroundImage = null;
                     button3.BackColor = Color.Green;
                     button4.BackColor = Color.Red;
                     DrawsInRow = 0;
@@ -203,8 +198,6 @@ namespace WarGame
                 {
                     CPUPoints += (DrawsInRow + 1) * 2;
                     War = false;
-                    button3.BackgroundImage = null;
-                    button4.BackgroundImage = null;
                     button3.BackColor = Color.Red;
                     button4.BackColor = Color.Green;
                     DrawsInRow = 0;
@@ -240,6 +233,21 @@ namespace WarGame
             if (AutoGameplay)
                 (sender as Button).Text = "Stop";
             else (sender as Button).Text = "Start";
+        }
+
+        private void drawNumberOnButton(Button button, int index)
+        {
+            Rectangle r = new Rectangle(100 * (index - 1), 0, 100, 147);
+            Bitmap src = Properties.Resources.numerki;
+            Bitmap target = new Bitmap(r.Width, r.Height);
+
+            using (Graphics g = Graphics.FromImage(target))
+            {
+                g.DrawImage(src, new Rectangle(0, 0, target.Width, target.Height), r, GraphicsUnit.Pixel);
+            }
+
+            button.BackgroundImage = target;
+            button.BackgroundImageLayout = ImageLayout.Stretch;
         }
     }
 }
