@@ -26,14 +26,20 @@ namespace WarGame
 
         private void PopulateListView()
         {
-            var highscoresFilePath = System.Environment.CurrentDirectory + @"\highscores.hscrs";
-            var content = File.ReadAllText(highscoresFilePath);
-            content = content.Remove(content.Length - 1);
-            var rows = content.Split(';');
             var listViewItems = new List<ListViewItem>();
-            foreach (var row in rows)
+            var highscores = GetHighscoresFromFile();
+            var sortedHighscores = highscores
+                .OrderByDescending(o => o.Score)
+                .Select(x => new Highscore()
+                {
+                    PlayerName = x.PlayerName,
+                    Score = x.Score,
+                    RoundsPlayed = x.RoundsPlayed
+                });
+                
+
+            foreach (var highscore in sortedHighscores)
             {
-                var highscore = Highscore.CreateFromStringData(row);
                 var listViewItem = new ListViewItem(highscore.PlayerName);
                 listViewItem.SubItems.Add(highscore.Score);
                 listViewItem.SubItems.Add(highscore.RoundsPlayed);
@@ -42,6 +48,24 @@ namespace WarGame
             }
 
             listView1.Items.AddRange(listViewItems.ToArray());
+        }
+
+        private IList<Highscore> GetHighscoresFromFile()
+        {
+            var highscoresFilePath = System.Environment.CurrentDirectory + @"\highscores.hscrs";
+            var highscores = new List<Highscore>();
+
+            var content = File.ReadAllText(highscoresFilePath);
+            content = content.Remove(content.Length - 1);
+
+            var rows = content.Split(';');
+            foreach (var row in rows)
+            {
+                var highscore = Highscore.CreateFromStringData(row);
+                highscores.Add(highscore);
+            }
+
+            return highscores;
         }
     }
 

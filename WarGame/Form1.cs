@@ -263,5 +263,10 @@ namespace WarGame
             Form3 highscores = new Form3();
             highscores.Show();
         }
+
+        private void trackBar1_Scroll(object sender, EventArgs e)
+        {
+
+        }
     }
 }
