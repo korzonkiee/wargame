@@ -25,9 +25,14 @@ namespace WarGame
         private int DrawsInRow = 0;
         private bool War = false;
 
+        private static Timer timer;
+
         public Form1()
         {
             InitializeComponent();
+            timer = new Timer();
+            timer.Interval = 2000;
+            timer.Tick += new EventHandler(TimerEventProcessor);
 
             Form2 form2 = new Form2(this);
             form2.Show();
@@ -42,10 +47,25 @@ namespace WarGame
 
         }
 
+        private void TimerEventProcessor(Object myObject, EventArgs myEventArgs)
+        {
+            if (Rounds > MaxRounds || PlayerPoints <= 0 || CPUPoints <= 0)
+                return;
+            button2.PerformClick();
+        }
+
         private void OnClosing(Object sender, FormClosingEventArgs args)
         {
             var dialogResult = showCloseDialog();
-            args.Cancel = (dialogResult == DialogResult.No);
+            if (dialogResult == DialogResult.Yes)
+            {
+                timer.Tick -= TimerEventProcessor;
+            }
+            else
+            {
+                args.Cancel = true;
+            }
+            
         }
 
         private void Form1_Shown(object sender, EventArgs e)
@@ -58,6 +78,7 @@ namespace WarGame
             var dialogResult = showCloseDialog();
             if (dialogResult == DialogResult.OK)
             {
+                timer.Tick -= TimerEventProcessor;
                 Application.Exit();
             }
         }
@@ -87,6 +108,10 @@ namespace WarGame
             PlayerPoints = Deck / 2;
             CPUPoints = Deck / 2;
 
+            AutoGameplay = false;
+            button5.Text = "Start";
+            timer.Stop();
+
             label9.Text = cpuName;
             label1.Text = playerName;
 
@@ -99,78 +124,14 @@ namespace WarGame
             label5.Text = $"Round: {Rounds} of {MaxRounds}";
         }
 
-        public void CreateExitDialog()
-        {
-            Form form1 = new Form();
-            Button button1 = new Button();
-            Button button2 = new Button();
-
-            button1.Text = "OK";
-            button1.Location = new Point(10, 10);
-            button2.Text = "Cancel";
-            button2.Location
-               = new Point(button1.Left, button1.Height + button1.Top + 10);
-            button1.DialogResult = DialogResult.OK;
-            button2.DialogResult = DialogResult.Cancel;
-            form1.Text = "My Dialog Box";
-            form1.FormBorderStyle = FormBorderStyle.FixedDialog;
-            form1.AcceptButton = button1;
-            form1.CancelButton = button2;
-            form1.StartPosition = FormStartPosition.CenterScreen;
-
-            form1.Controls.Add(button1);
-            form1.Controls.Add(button2);
-
-            form1.ShowDialog();
-
-            if (form1.DialogResult == DialogResult.OK)
-            {
-                Application.Exit();
-            }
-            else
-            {
-                form1.Dispose();
-            }
-        }
-
         //player button
         private void button2_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("Draws " + DrawsInRow);
-            if (Rounds > MaxRounds || PlayerPoints <= 0 || CPUPoints <= 0)
-            {
-                string result = "";
-                if (PlayerPoints > CPUPoints)
-                    result = "Win!";
-                else if (PlayerPoints < CPUPoints)
-                    result = "Defeat!";
-                else result = "Draw!";
-                
-                var highscoresLine = $"{PlayerName},{PlayerPoints},{Rounds - 1};";
-                var highscoresFilePath = System.Environment.CurrentDirectory + @"\highscores.hscrs";
-                File.AppendAllText(highscoresFilePath, highscoresLine);
-
-
-                DialogResult dialogResult = MessageBox.Show($"{result}. Wanna play again?", "Finish", MessageBoxButtons.YesNo);
-                if (dialogResult == DialogResult.Yes)
-                {
-                    CreateNewGame(PlayerName, CPUName, MaxRounds, Sets);
-                    return;
-                }
-                else if (dialogResult == DialogResult.No)
-                {
-                    var secondDialogResult = showCloseDialog();
-                    if (secondDialogResult == DialogResult.OK)
-                    {
-                        Application.Exit();
-                    }
-                }
-            }
-            label5.Text = $"Round: {Rounds} of {MaxRounds}";
-
             Random rnd = new Random();
             int playerRandomNumber = rnd.Next(1, 11);
             int cpuRandomNumber = rnd.Next(1, 11);
+
+            label5.Text = $"Round: {Rounds} of {MaxRounds}";
 
             drawNumberOnButton(button3, playerRandomNumber);
             drawNumberOnButton(button4, cpuRandomNumber);
@@ -216,6 +177,36 @@ namespace WarGame
             label8.Text = CPUPoints.ToString();
 
             Rounds++;
+
+            if (Rounds > MaxRounds || PlayerPoints <= 0 || CPUPoints <= 0)
+            {
+                string result = "";
+                if (PlayerPoints > CPUPoints)
+                    result = "Win!";
+                else if (PlayerPoints < CPUPoints)
+                    result = "Defeat!";
+                else result = "Draw!";
+
+                var highscoresLine = $"{PlayerName},{PlayerPoints},{Rounds - 1};";
+                var highscoresFilePath = System.Environment.CurrentDirectory + @"\highscores.hscrs";
+                File.AppendAllText(highscoresFilePath, highscoresLine);
+
+                DialogResult dialogResult = MessageBox.Show($"{result}. Wanna play again?", "Finish", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.Yes)
+                {
+                    CreateNewGame(PlayerName, CPUName, MaxRounds, Sets);
+                    return;
+                }
+                else if (dialogResult == DialogResult.No)
+                {
+                    var secondDialogResult = showCloseDialog();
+                    if (secondDialogResult == DialogResult.Yes)
+                    {
+                        timer.Tick -= TimerEventProcessor;
+                        Application.Exit();
+                    }
+                }
+            }
         }
 
         //cpu button
@@ -239,8 +230,15 @@ namespace WarGame
         {
             AutoGameplay = !AutoGameplay;
             if (AutoGameplay)
+            {
+                timer.Start();
                 (sender as Button).Text = "Stop";
-            else (sender as Button).Text = "Start";
+            }
+            else
+            {
+                timer.Stop();
+                (sender as Button).Text = "Start";
+            }
         }
 
         private void drawNumberOnButton(Button button, int index)
@@ -266,7 +264,7 @@ namespace WarGame
 
         private void trackBar1_Scroll(object sender, EventArgs e)
         {
-
+            timer.Interval = (trackBar1.Maximum - trackBar1.Value) * 10 + 1;
         }
     }
 }
