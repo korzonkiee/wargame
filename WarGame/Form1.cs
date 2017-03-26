@@ -280,6 +280,11 @@ namespace WarGame
         {
             timer.Interval = (trackBar1.Maximum - trackBar1.Value) * 10 + 1;
         }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            JsonConvert
+        }
     }
 
     class GameState
